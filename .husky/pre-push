@@ -1,18 +1,13 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Load nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+protected_branch='mai'
+current_branch=$(git branch --show-current)
 
-
-nvm use
-
-if [ $(git branch --no-color | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') = "master" ] && [ $(git remote get-url origin) = "https://github.com/monkeytypegame/monkeytype" ]; then
-  echo "Running tests before pushing to master..."
-  npm run test
-  if [ $? -ne 0 ]; then
-    echo "Tests failed, aborting push."
-    exit 1
-  fi
+if [ $protected_branch = $current_branch ]
+then
+    echo "Pushing to $protected_branch is a sin! Instead, create a pull request and repent."
+    exit 1 # push will not execute
+else
+    exit 0 # push will execute
 fi
