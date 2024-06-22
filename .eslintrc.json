@@ -53,7 +53,7 @@
     "import/resolver": {
       "typescript": {
         "alwaysTryTypes": true,
-        "project": ["frontend/tsconfig.json", "backend/tsconfig.json"]
+        "project": ["frontend/tsconfig.json"]
       },
       "node": true
     }
