@@ -22,8 +22,8 @@
     "docker": "docker compose -f docker/compose.dev.yml up"
   },
   "engines": {
-    "node": "18.19.1",
-    "npm": "10.2.4"
+    "node": "20.13.1",
+    "npm": "10.8.1"
   },
   "browserslist": [
     "defaults"
@@ -42,6 +42,7 @@
     "ajv": "8.12.0",
     "autoprefixer": "10.4.14",
     "dotenv": "16.4.5",
+    "eslint": "8.57.0",
     "fontawesome-subset": "4.4.0",
     "gulp": "4.0.2",
     "gulp-eslint-new": "1.9.1",

@@ -980,6 +980,7 @@ function verifyResultFiltersStructure(
     const key = entry[0] as keyof SharedTypes.ResultFilters;
     const value = entry[1];
     if (filter[key] === undefined) {
+      // @ts-expect-error Type mismatch is expected here
       filter[key] = value;
     }
   });

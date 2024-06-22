@@ -207,6 +207,6 @@ export function updateStyle(): void {
   }, 125);
 }
 
-ConfigEvent.subscribe((eventKey, eventValue) => {
+ConfigEvent.subscribe((eventKey, _eventValue) => {
   if (eventKey === "timerStyle") updateStyle();
 });
