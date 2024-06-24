@@ -4,7 +4,7 @@ import * as Notifications from "../elements/notifications";
 import * as CaptchaController from "../controllers/captcha-controller";
 import SlimSelect from "slim-select";
 import AnimatedModal from "../utils/animated-modal";
-import { isAuthenticated } from "../firebase";
+
 import { CharacterCounter } from "../elements/character-counter";
 
 type State = {
@@ -26,10 +26,6 @@ type ShowOptions = {
 let select: SlimSelect | undefined = undefined;
 
 export async function show(options: ShowOptions): Promise<void> {
-  if (!isAuthenticated()) {
-    return Notifications.add("You must be logged in to submit a report", 0);
-  }
-
   void modal.show({
     mode: "dialog",
     focusFirstInput: true,

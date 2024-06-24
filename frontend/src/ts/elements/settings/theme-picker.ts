@@ -1,16 +1,14 @@
 import Config, * as UpdateConfig from "../../config";
-import * as ThemeController from "../../controllers/theme-controller";
-import * as Misc from "../../utils/misc";
-import * as JSONData from "../../utils/json-data";
-import * as Colors from "../../utils/colors";
-import * as Notifications from "../notifications";
-import * as ThemeColors from "../theme-colors";
 import * as ChartController from "../../controllers/chart-controller";
-import * as Loader from "../loader";
+import * as ThemeController from "../../controllers/theme-controller";
 import * as DB from "../../db";
 import * as ConfigEvent from "../../observables/config-event";
-import { isAuthenticated } from "../../firebase";
 import * as ActivePage from "../../states/active-page";
+import * as Colors from "../../utils/colors";
+import * as JSONData from "../../utils/json-data";
+import * as Misc from "../../utils/misc";
+import * as Notifications from "../notifications";
+import * as ThemeColors from "../theme-colors";
 
 function updateActiveButton(): void {
   let activeThemeName = Config.theme;
@@ -119,16 +117,9 @@ export async function refreshButtons(): Promise<void> {
     ).empty();
     const addButton = $(".pageSettings .section.themes .addCustomThemeButton");
 
-    if (!isAuthenticated()) {
-      $(
-        ".pageSettings .section.themes .customThemeEdit #saveCustomThemeButton"
-      ).text("save");
-      return;
-    } else {
-      $(
-        ".pageSettings .section.themes .customThemeEdit #saveCustomThemeButton"
-      ).text("save as new");
-    }
+    $(
+      ".pageSettings .section.themes .customThemeEdit #saveCustomThemeButton"
+    ).text("save as new");
 
     addButton.removeClass("hidden");
 
@@ -460,21 +451,8 @@ $(".pageSettings #loadCustomColorsFromPreset").on("click", async () => {
 
 $(".pageSettings #saveCustomThemeButton").on("click", async () => {
   saveCustomThemeColors();
-  if (isAuthenticated()) {
-    const newCustomTheme = {
-      name: "custom",
-      colors: Config.customThemeColors,
-    };
 
-    Loader.show();
-    const response = await DB.addCustomTheme(newCustomTheme);
-    Loader.hide();
-    if (response) {
-      updateActiveTab(true);
-    }
-  } else {
-    updateActiveTab(true);
-  }
+  updateActiveTab(true);
 });
 
 ConfigEvent.subscribe((eventKey) => {

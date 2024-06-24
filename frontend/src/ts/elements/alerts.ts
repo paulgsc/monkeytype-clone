@@ -1,17 +1,14 @@
-import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
 import Ape from "../ape";
-import { isAuthenticated } from "../firebase";
-import * as AccountButton from "../elements/account-button";
-import * as DB from "../db";
-import * as NotificationEvent from "../observables/notification-event";
 import * as BadgeController from "../controllers/badge-controller";
+import * as DB from "../db";
+import * as AccountButton from "../elements/account-button";
 import * as Notifications from "../elements/notifications";
-import * as ConnectionState from "../states/connection";
-import { escapeHTML } from "../utils/misc";
+import * as NotificationEvent from "../observables/notification-event";
 import AnimatedModal from "../utils/animated-modal";
+import { escapeHTML } from "../utils/misc";
 
 let accountAlerts: MonkeyTypes.MonkeyMail[] = [];
-let maxMail = 0;
+const maxMail = 0;
 let mailToMarkRead: string[] = [];
 let mailToDelete: string[] = [];
 
@@ -97,15 +94,8 @@ function hide(): void {
 async function show(): Promise<void> {
   void modal.show({
     beforeAnimation: async () => {
-      if (isAuthenticated()) {
-        $("#alertsPopup .accountAlerts").removeClass("hidden");
-        $("#alertsPopup .separator.accountSeparator").removeClass("hidden");
-        $("#alertsPopup .accountAlerts .list").html(`
-          <div class="preloader"><i class="fas fa-fw fa-spin fa-circle-notch"></i></div>`);
-      } else {
-        $("#alertsPopup .accountAlerts").addClass("hidden");
-        $("#alertsPopup .separator.accountSeparator").addClass("hidden");
-      }
+      $("#alertsPopup .accountAlerts").addClass("hidden");
+      $("#alertsPopup .separator.accountSeparator").addClass("hidden");
 
       accountAlerts = [];
       mailToDelete = [];
@@ -114,106 +104,7 @@ async function show(): Promise<void> {
       fillNotifications();
       fillPSAs();
     },
-    afterAnimation: async () => {
-      if (isAuthenticated()) {
-        void getAccountAlerts();
-      }
-    },
   });
-}
-
-async function getAccountAlerts(): Promise<void> {
-  if (!ConnectionState.get()) {
-    $("#alertsPopup .accountAlerts .list").html(`
-    <div class="nothing">
-    You are offline
-    </div>
-    `);
-    return;
-  }
-
-  const inboxResponse = await Ape.users.getInbox();
-
-  if (inboxResponse.status === 503) {
-    $("#alertsPopup .accountAlerts .list").html(`
-    <div class="nothing">
-    Account inboxes are temporarily unavailable
-    </div>
-    `);
-    return;
-  } else if (inboxResponse.status !== 200) {
-    $("#alertsPopup .accountAlerts .list").html(`
-    <div class="nothing">
-    Error getting inbox: ${inboxResponse.message} Please try again later
-    </div>
-    `);
-    return;
-  }
-  const inboxData = inboxResponse.data as {
-    inbox: MonkeyTypes.MonkeyMail[];
-    maxMail: number;
-  };
-
-  accountAlerts = inboxData.inbox;
-
-  updateClaimDeleteAllButton();
-
-  if (accountAlerts.length === 0) {
-    $("#alertsPopup .accountAlerts .list").html(`
-    <div class="nothing">
-    Nothing to show
-    </div>
-    `);
-    return;
-  }
-
-  maxMail = inboxData.maxMail;
-
-  updateInboxSize();
-
-  $("#alertsPopup .accountAlerts .list").empty();
-
-  for (const ie of accountAlerts) {
-    if (!ie.read && ie.rewards.length === 0) {
-      mailToMarkRead.push(ie.id);
-    }
-
-    let rewardsString = "";
-
-    if (ie.rewards.length > 0 && !ie.read) {
-      rewardsString = `<div class="rewards">
-        <i class="fas fa-fw fa-gift"></i>
-        <span>${ie.rewards.length}</span>
-      </div>`;
-    }
-
-    $("#alertsPopup .accountAlerts .list").append(`
-    
-      <div class="item" data-id="${ie.id}">
-        <div class="indicator ${ie.read ? "" : "main"}"></div>
-        <div class="timestamp">${formatDistanceToNowStrict(
-          new Date(ie.timestamp)
-        )} ago</div>
-        <div class="title">${ie.subject}</div>
-        <div class="body">
-          ${ie.body}\n\n${rewardsString}
-        </div>
-        <div class="buttons">
-          ${
-            ie.rewards.length > 0 && !ie.read
-              ? `<button class="markReadAlert textButton" aria-label="Claim" data-balloon-pos="left"><i class="fas fa-gift"></i></button>`
-              : ``
-          }
-          ${
-            (ie.rewards.length > 0 && ie.read) || ie.rewards.length === 0
-              ? `<button class="deleteAlert textButton" aria-label="Delete" data-balloon-pos="left"><i class="fas fa-trash"></i></button>`
-              : ``
-          }
-        </div>
-      </div>
-    
-    `);
-  }
 }
 
 export function addPSA(message: string, level: number): void {

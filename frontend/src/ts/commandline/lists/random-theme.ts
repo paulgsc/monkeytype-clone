@@ -1,6 +1,4 @@
 import * as UpdateConfig from "../../config";
-import { isAuthenticated } from "../../firebase";
-import * as Notifications from "../../elements/notifications";
 
 const subgroup: MonkeyTypes.CommandsSubgroup = {
   title: "Random theme...",
@@ -51,13 +49,6 @@ const subgroup: MonkeyTypes.CommandsSubgroup = {
       display: "custom",
       configValue: "custom",
       exec: (): void => {
-        if (!isAuthenticated()) {
-          Notifications.add(
-            "Multiple custom themes are available to logged in users only",
-            0
-          );
-          return;
-        }
         UpdateConfig.setRandomTheme("custom");
       },
     },

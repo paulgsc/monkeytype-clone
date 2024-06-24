@@ -14,7 +14,6 @@ import * as ImportExportSettingsModal from "../modals/import-export-settings";
 import * as ConfigEvent from "../observables/config-event";
 import * as ActivePage from "../states/active-page";
 import Page from "./page";
-import { getAuthenticatedUser, isAuthenticated } from "../firebase";
 import Ape from "../ape";
 import { areFunboxesCompatible } from "../test/funbox/funbox-validation";
 import { get as getTypingSpeedUnit } from "../utils/typing-speed-units";
@@ -707,26 +706,19 @@ function showAccountSection(): void {
 
 export function updateDiscordSection(): void {
   //no code and no discord
-  if (!isAuthenticated()) {
-    $(".pageSettings .section.discordIntegration").addClass("hidden");
-  } else {
-    if (!DB.getSnapshot()) return;
-    $(".pageSettings .section.discordIntegration").removeClass("hidden");
 
-    if (DB.getSnapshot()?.discordId === undefined) {
-      //show button
-      $(".pageSettings .section.discordIntegration .buttons").removeClass(
-        "hidden"
-      );
-      $(".pageSettings .section.discordIntegration .info").addClass("hidden");
-    } else {
-      $(".pageSettings .section.discordIntegration .buttons").addClass(
-        "hidden"
-      );
-      $(".pageSettings .section.discordIntegration .info").removeClass(
-        "hidden"
-      );
-    }
+  if (!DB.getSnapshot()) return;
+  $(".pageSettings .section.discordIntegration").removeClass("hidden");
+
+  if (DB.getSnapshot()?.discordId === undefined) {
+    //show button
+    $(".pageSettings .section.discordIntegration .buttons").removeClass(
+      "hidden"
+    );
+    $(".pageSettings .section.discordIntegration .info").addClass("hidden");
+  } else {
+    $(".pageSettings .section.discordIntegration .buttons").addClass("hidden");
+    $(".pageSettings .section.discordIntegration .info").removeClass("hidden");
   }
 }
 
@@ -734,74 +726,6 @@ export function updateAuthSections(): void {
   $(".pageSettings .section.passwordAuthSettings button").addClass("hidden");
   $(".pageSettings .section.googleAuthSettings button").addClass("hidden");
   $(".pageSettings .section.githubAuthSettings button").addClass("hidden");
-
-  if (!isAuthenticated()) return;
-  const user = getAuthenticatedUser();
-
-  const passwordProvider = user.providerData.some(
-    (provider) => provider.providerId === "password"
-  );
-  const googleProvider = user.providerData.some(
-    (provider) => provider.providerId === "google.com"
-  );
-  const githubProvider = user.providerData.some(
-    (provider) => provider.providerId === "github.com"
-  );
-
-  if (passwordProvider) {
-    $(
-      ".pageSettings .section.passwordAuthSettings #emailPasswordAuth"
-    ).removeClass("hidden");
-    $(
-      ".pageSettings .section.passwordAuthSettings #passPasswordAuth"
-    ).removeClass("hidden");
-    if (googleProvider || githubProvider) {
-      $(
-        ".pageSettings .section.passwordAuthSettings #removePasswordAuth"
-      ).removeClass("hidden");
-    }
-  } else {
-    $(
-      ".pageSettings .section.passwordAuthSettings #addPasswordAuth"
-    ).removeClass("hidden");
-  }
-
-  if (googleProvider) {
-    $(
-      ".pageSettings .section.googleAuthSettings #removeGoogleAuth"
-    ).removeClass("hidden");
-    if (passwordProvider || githubProvider) {
-      $(
-        ".pageSettings .section.googleAuthSettings #removeGoogleAuth"
-      ).removeClass("disabled");
-    } else {
-      $(".pageSettings .section.googleAuthSettings #removeGoogleAuth").addClass(
-        "disabled"
-      );
-    }
-  } else {
-    $(".pageSettings .section.googleAuthSettings #addGoogleAuth").removeClass(
-      "hidden"
-    );
-  }
-  if (githubProvider) {
-    $(
-      ".pageSettings .section.githubAuthSettings #removeGithubAuth"
-    ).removeClass("hidden");
-    if (passwordProvider || googleProvider) {
-      $(
-        ".pageSettings .section.githubAuthSettings #removeGithubAuth"
-      ).removeClass("disabled");
-    } else {
-      $(".pageSettings .section.githubAuthSettings #removeGithubAuth").addClass(
-        "disabled"
-      );
-    }
-  } else {
-    $(".pageSettings .section.githubAuthSettings #addGithubAuth").removeClass(
-      "hidden"
-    );
-  }
 }
 
 function setActiveFunboxButton(): void {
@@ -835,7 +759,7 @@ function setActiveFunboxButton(): void {
 }
 
 function refreshTagsSettingsSection(): void {
-  if (isAuthenticated() && DB.getSnapshot()) {
+  if (DB.getSnapshot()) {
     const tagsEl = $(".pageSettings .section.tags .tagsList").empty();
     DB.getSnapshot()?.tags?.forEach((tag) => {
       // let tagPbString = "No PB found";
@@ -872,7 +796,7 @@ function refreshTagsSettingsSection(): void {
 }
 
 function refreshPresetsSettingsSection(): void {
-  if (isAuthenticated() && DB.getSnapshot()) {
+  if (DB.getSnapshot()) {
     const presetsEl = $(".pageSettings .section.presets .presetsList").empty();
     DB.getSnapshot()?.presets?.forEach((preset: MonkeyTypes.SnapshotPreset) => {
       presetsEl.append(`
@@ -962,11 +886,7 @@ export async function update(groupUpdate = true): Promise<void> {
     ".pageSettings .section[data-config-name='customBackgroundSize'] input"
   ).val(Config.customBackground);
 
-  if (isAuthenticated()) {
-    showAccountSection();
-  } else {
-    hideAccountSection();
-  }
+  showAccountSection();
 
   CustomBackgroundFilter.updateUI();
 

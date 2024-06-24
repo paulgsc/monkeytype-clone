@@ -12,7 +12,6 @@ import {
 } from "../utils/search-service";
 import { splitByAndKeep } from "../utils/strings";
 import QuotesController from "../controllers/quotes-controller";
-import { isAuthenticated } from "../firebase";
 import { debounce } from "throttle-debounce";
 import Ape from "../ape";
 import * as Loader from "../elements/loader";
@@ -111,8 +110,7 @@ function buildQuoteSearchResult(
     lengthDesc = "thicc";
   }
 
-  const loggedOut = !isAuthenticated();
-  const isFav = !loggedOut && QuotesController.isQuoteFavorite(quote);
+  const isFav = QuotesController.isQuoteFavorite(quote);
 
   return `
   <div class="searchResult" data-quote-id="${quote.id}">
@@ -138,14 +136,11 @@ function buildQuoteSearchResult(
       ${highlightMatches(quote.source, matchedSearchTerms)}
     </div>
 
-    <div class="textButton report ${
-      loggedOut && "hidden"
-    }" aria-label="Report quote" data-balloon-pos="left">
+    <div class="textButton" aria-label="Report quote" data-balloon-pos="left">
       <i class="fas fa-flag report"></i>
     </div>
 
-    <div class="textButton favorite ${
-      loggedOut && "hidden"
+    <div class="textButton favorite"
     }" aria-label="Favorite quote" data-balloon-pos="left">
       <i class="${isFav ? "fas" : "far"} fa-heart favorite"></i>
     </div>
@@ -252,13 +247,8 @@ export async function show(showOptions?: ShowOptions): Promise<void> {
     ...showOptions,
     focusFirstInput: true,
     beforeAnimation: async () => {
-      if (!isAuthenticated()) {
-        $("#quoteSearchModal .goToQuoteSubmit").addClass("hidden");
-        $("#quoteSearchModal .toggleFavorites").addClass("hidden");
-      } else {
-        $("#quoteSearchModal .goToQuoteSubmit").removeClass("hidden");
-        $("#quoteSearchModal .toggleFavorites").removeClass("hidden");
-      }
+      $("#quoteSearchModal .goToQuoteSubmit").removeClass("hidden");
+      $("#quoteSearchModal .toggleFavorites").removeClass("hidden");
 
       const isQuoteMod =
         DB.getSnapshot()?.quoteMod !== undefined &&
@@ -401,11 +391,6 @@ async function setup(modalEl: HTMLElement): Promise<void> {
   modalEl
     .querySelector("button.toggleFavorites")
     ?.addEventListener("click", (e) => {
-      if (!isAuthenticated()) {
-        // Notifications.add("You need to be logged in to use this feature!", 0);
-        return;
-      }
-
       $(e.target as HTMLElement).toggleClass("active");
       searchForQuotes();
     });

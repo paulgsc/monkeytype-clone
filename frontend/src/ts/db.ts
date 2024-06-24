@@ -2,7 +2,6 @@ import Ape from "./ape";
 import * as Notifications from "./elements/notifications";
 import * as LoadingPage from "./pages/loading";
 import DefaultConfig from "./constants/default-config";
-import { isAuthenticated } from "./firebase";
 import { defaultSnap } from "./constants/default-snapshot";
 import * as ConnectionState from "./states/connection";
 import { lastElementFromArray } from "./utils/arrays";
@@ -52,7 +51,6 @@ export async function initSnapshot(): Promise<
   //send api request with token that returns tags, presets, and data needed for snap
   const snap = { ...defaultSnap };
   try {
-    if (!isAuthenticated()) return false;
     // if (ActivePage.get() === "loading") {
     //   LoadingPage.updateBar(22.5);
     // } else {
@@ -246,8 +244,6 @@ export async function initSnapshot(): Promise<
 }
 
 export async function getUserResults(offset?: number): Promise<boolean> {
-  if (!isAuthenticated()) return false;
-
   if (!dbSnapshot) return false;
   if (
     dbSnapshot.results !== undefined &&
@@ -364,7 +360,6 @@ export async function editCustomTheme(
   themeId: string,
   newTheme: MonkeyTypes.RawCustomTheme
 ): Promise<boolean> {
-  if (!isAuthenticated()) return false;
   if (!dbSnapshot) return false;
 
   if (dbSnapshot.customThemes === undefined) {
@@ -398,7 +393,6 @@ export async function editCustomTheme(
 }
 
 export async function deleteCustomTheme(themeId: string): Promise<boolean> {
-  if (!isAuthenticated()) return false;
   if (!dbSnapshot) return false;
 
   const customTheme = dbSnapshot.customThemes?.find((t) => t._id === themeId);
@@ -891,11 +885,9 @@ export async function updateLbMemory<M extends SharedTypes.Config.Mode>(
 }
 
 export async function saveConfig(config: SharedTypes.Config): Promise<void> {
-  if (isAuthenticated()) {
-    const response = await Ape.configs.save(config);
-    if (response.status !== 200) {
-      Notifications.add("Failed to save config: " + response.message, -1);
-    }
+  const response = await Ape.configs.save(config);
+  if (response.status !== 200) {
+    Notifications.add("Failed to save config: " + response.message, -1);
   }
 }
 
@@ -975,7 +967,7 @@ export function setStreak(streak: number): void {
 export async function getTestActivityCalendar(
   yearString: string
 ): Promise<MonkeyTypes.TestActivityCalendar | undefined> {
-  if (!isAuthenticated() || dbSnapshot === undefined) return undefined;
+  if (dbSnapshot === undefined) return undefined;
 
   if (yearString === "current") return dbSnapshot.testActivity;
 
